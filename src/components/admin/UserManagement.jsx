@@ -186,8 +186,7 @@ export default function UserManagement() {
                   {gerencias.map(g => <option key={g.id} value={g.id}>{g.nome}</option>)}
                 </select>
               </div>
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-1">
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
                 <button type="submit" className="btn-primary" disabled={saving}>
                   {saving ? 'Salvando…' : 'Salvar'}

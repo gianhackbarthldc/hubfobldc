@@ -1,0 +1,20 @@
+# Python / PyInstaller
+__pycache__/
+*.py[cod]
+*.spec.bak
+build/
+dist/
+*.egg-info/
+
+# Node / Vite
+hub_fob_web/node_modules/
+hub_fob_web/dist/
+
+# Env
+.env
+.env.local
+hub_fob_web/.env.local
+
+# OS
+.DS_Store
+Thumbs.db

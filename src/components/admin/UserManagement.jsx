@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react'
+import { createClient } from '@supabase/supabase-js'
 import { supabase } from '../../lib/supabase'
 
+// Cliente separado para criar usuários sem sobrescrever a sessão do admin
+const supabaseSignup = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
+  { auth: { persistSession: false, autoRefreshToken: false } }
+)
+
 const ROLES = ['admin', 'gerente', 'usuario']
-const EMPTY_FORM = { full_name: '', role: 'usuario', gerencia_id: '' }
+const EMPTY_FORM = { full_name: '', email: '', password: '', role: 'usuario', gerencia_id: '' }
 
 export default function UserManagement() {
   const [users, setUsers]       = useState([])
@@ -65,20 +73,25 @@ export default function UserManagement() {
           .eq('id', form.id)
         if (error) throw error
       } else {
-        // New users must be created via Supabase Auth (admin SDK or invite flow).
-        // Here we use the admin.createUser API — requires service_role key on the client.
-        const { data, error: eSignup } = await supabase.auth.admin.createUser({
-          email:         form.email,
-          password:      form.password,
-          email_confirm: true,
-          user_metadata: { full_name: form.full_name },
+        // Cria o auth user sem afetar a sessão do admin
+        const { data, error: eSignup } = await supabaseSignup.auth.signUp({
+          email:    form.email.trim(),
+          password: form.password,
+          options:  { data: { full_name: form.full_name } },
         })
         if (eSignup) throw eSignup
-        const { error: eProf } = await supabase.from('profiles').update({
-          full_name:   form.full_name,
-          role:        form.role,
-          gerencia_id: form.gerencia_id || null,
-        }).eq('id', data.user.id)
+        if (!data.user) throw new Error('Usuário não criado. Verifique se o e-mail já existe.')
+
+        // O trigger handle_new_user cria o profile automaticamente.
+        // Atualizamos role e gerencia usando o cliente admin (com permissão RLS).
+        const { error: eProf } = await supabase
+          .from('profiles')
+          .update({
+            full_name:   form.full_name,
+            role:        form.role,
+            gerencia_id: form.gerencia_id || null,
+          })
+          .eq('id', data.user.id)
         if (eProf) throw eProf
       }
       setShowModal(false)
@@ -132,18 +145,32 @@ export default function UserManagement() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="card w-full max-w-md shadow-2xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-bold text-gray-800">{form.id ? 'Editar Usuário' : 'Novo Usuário'}</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+          <div className="card w-full max-w-md p-6 shadow-2xl">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="font-bold text-slate-800">{form.id ? 'Editar Usuário' : 'Novo Usuário'}</h2>
+              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600 text-lg leading-none">✕</button>
             </div>
-            {formError && <div className="mb-3 text-sm text-red-600">{formError}</div>}
-            <form onSubmit={handleSave} className="space-y-3">
+            {formError && <div className="alert-error mb-4">{formError}</div>}
+            <form onSubmit={handleSave} className="space-y-4">
               <div>
                 <label className="label">Nome Completo</label>
                 <input className="input" required value={form.full_name}
                   onChange={e => setForm(p => ({ ...p, full_name: e.target.value }))} />
               </div>
+              {!form.id && (
+                <>
+                  <div>
+                    <label className="label">E-mail</label>
+                    <input className="input" type="email" required value={form.email}
+                      onChange={e => setForm(p => ({ ...p, email: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="label">Senha (provisória)</label>
+                    <input className="input" type="password" required minLength={6} value={form.password}
+                      onChange={e => setForm(p => ({ ...p, password: e.target.value }))} />
+                  </div>
+                </>
+              )}
               <div>
                 <label className="label">Perfil</label>
                 <select className="input" value={form.role}
@@ -158,6 +185,7 @@ export default function UserManagement() {
                   <option value="">— Nenhuma —</option>
                   {gerencias.map(g => <option key={g.id} value={g.id}>{g.nome}</option>)}
                 </select>
+              </div>
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>

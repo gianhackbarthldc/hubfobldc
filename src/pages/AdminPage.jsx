@@ -2,11 +2,13 @@ import { useState } from 'react'
 import UserManagement from '../components/admin/UserManagement'
 import StatusManagement from '../components/admin/StatusManagement'
 import AuditViewer from '../components/admin/AuditViewer'
+import GerenciaManagement from '../components/admin/GerenciaManagement'
 
 const TABS = [
-  { id: 'users',  label: 'Usuários'   },
-  { id: 'status', label: 'Status'     },
-  { id: 'audit',  label: 'Auditoria'  },
+  { id: 'users',     label: 'Usuários'  },
+  { id: 'gerencias', label: 'Gerências' },
+  { id: 'status',    label: 'Status'    },
+  { id: 'audit',     label: 'Auditoria' },
 ]
 
 export default function AdminPage() {
@@ -37,9 +39,10 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {tab === 'users'  && <UserManagement />}
-      {tab === 'status' && <StatusManagement />}
-      {tab === 'audit'  && <AuditViewer />}
+      {tab === 'users'     && <UserManagement />}
+      {tab === 'gerencias' && <GerenciaManagement />}
+      {tab === 'status'    && <StatusManagement />}
+      {tab === 'audit'     && <AuditViewer />}
     </div>
   )
 }

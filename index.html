@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hub FOB — Controle de Embarques</title>
+    <script>
+      // Restaura o path salvo pelo 404.html para o SPA funcionar no GitHub Pages
+      (function () {
+        var redirect = sessionStorage.getItem('spa_redirect')
+        if (redirect) {
+          sessionStorage.removeItem('spa_redirect')
+          try {
+            var r = JSON.parse(redirect)
+            var url = r.path + (r.query || '') + (r.hash || '')
+            window.history.replaceState(null, '', url)
+          } catch (e) {}
+        }
+      })()
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

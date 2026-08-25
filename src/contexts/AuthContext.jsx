@@ -20,10 +20,16 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     // Restore session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      loadProfile(session?.user ?? null).finally(() => setLoading(false))
-    })
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setUser(session?.user ?? null)
+        return loadProfile(session?.user ?? null)
+      })
+      .catch(() => {
+        setUser(null)
+        setProfile(null)
+      })
+      .finally(() => setLoading(false))
 
     // Listen for auth changes (login / logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {

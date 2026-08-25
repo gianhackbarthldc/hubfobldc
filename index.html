@@ -15,8 +15,10 @@
           sessionStorage.removeItem('spa_redirect')
           try {
             var r = JSON.parse(redirect)
-            var url = r.path + (r.query || '') + (r.hash || '')
-            window.history.replaceState(null, '', url)
+            if (typeof r.path === 'string') {
+              var url = r.path + (r.query || '') + (r.hash || '')
+              window.history.replaceState(null, '', url)
+            }
           } catch (e) {}
         }
       })()

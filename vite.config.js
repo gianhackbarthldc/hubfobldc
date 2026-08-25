@@ -3,5 +3,6 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/hufobldc/',
+  // Em dev: base '/' para servir local. Em build/prod: '/hufobldc/' para GitHub Pages.
+  base: process.env.NODE_ENV === 'production' ? '/hufobldc/' : '/',
 })
